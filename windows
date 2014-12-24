@@ -1,0 +1,11 @@
+#!/bin/sh
+#vboxmanage startvm "Windows 7"
+qemu-system-x86_64\
+  -cpu host\
+  -m 2048\
+  -vga std\
+  -usbdevice tablet\
+  -localtime\
+  -enable-kvm\
+  $@\
+  /home/yantene/media/vmimages/windows.qcow2
