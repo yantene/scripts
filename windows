@@ -1,5 +1,4 @@
 #!/bin/sh
-#vboxmanage startvm "Windows 7"
 qemu-system-x86_64\
   -cpu host\
   -m 2048\
@@ -8,4 +7,4 @@ qemu-system-x86_64\
   -localtime\
   -enable-kvm\
   $@\
-  /home/yantene/media/vmimages/windows.qcow2
+  /home/yantene/media/vmimages/windows/windows.qcow2
