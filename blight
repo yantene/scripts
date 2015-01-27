@@ -1,0 +1,50 @@
+#!/bin/sh
+
+BLIGHT_DIR="/sys/class/backlight/intel_backlight"
+MAX_BRIGHTNESS=`cat $BLIGHT_DIR/max_brightness`
+CUR_BRIGHTNESS=`cat $BLIGHT_DIR/brightness`
+
+case $# in
+  # 現在の輝度を表示
+  0 ) echo $((CUR_BRIGHTNESS * 100 / MAX_BRIGHTNESS))"%";;
+
+  # 輝度の更新
+  1 ) if [ `expr "$1" : '[\+\-]\?[0-9]\+%\?'` -ne 0 ]; then
+
+        # 引数の数字抽出
+        if [ `expr "$1" : '^.\+%$'` -ne 0 ]; then
+          # %で終わる場合には最大輝度のその割合の値で代入
+          UPDATE_BRIGHTNESS=$((MAX_BRIGHTNESS * `expr "$1" : '^[\+\-]\?\([0-9]\+\)%$'` / 100))
+        else
+          # それ以外の場合にはその値をそのまま代入
+          UPDATE_BRIGHTNESS=`expr "$1" : '^[\+\-]\?\([0-9]\+\)$'`
+        fi
+
+        # 増加量・または減少量であればその計算を行う
+        if [ `expr "$1" : '^\+.\+%\?$'` -ne 0 ]; then
+          # +で始まる場合には，現在の輝度に先ほど取り出した値を足したものを新しい値とする
+          UPDATE_BRIGHTNESS=$((CUR_BRIGHTNESS + UPDATE_BRIGHTNESS))
+        elif [ `expr "$1" : '^\-.\+%\?$'` -ne 0 ]; then
+          # -で始まる場合には，現在の輝度から先ほど取り出した値を引いたものを新しい値とする
+          UPDATE_BRIGHTNESS=$((CUR_BRIGHTNESS - UPDATE_BRIGHTNESS))
+        fi
+
+        # しきい値に触れていれば補正
+        if [ $MAX_BRIGHTNESS -lt $UPDATE_BRIGHTNESS ]; then
+          # 最大輝度を超えていれば，最大輝度とする
+          UPDATE_BRIGHTNESS=$MAX_BRIGHTNESS
+        elif [ 1 -gt $UPDATE_BRIGHTNESS ]; then
+          # 1を下回っていれば，1とする
+          UPDATE_BRIGHTNESS=1
+        fi
+
+        # 更新
+        echo $UPDATE_BRIGHTNESS | sudo tee $BLIGHT_DIR/brightness
+      else
+        echo "invalid arguments"
+      fi;;
+
+  # 引数が多すぎる
+  * ) echo "invalid arguments";;
+esac
+
