@@ -15,7 +15,7 @@ case $# in
   0 ) echo $((CUR_BRIGHTNESS * 100 / MAX_BRIGHTNESS))"%";;
 
   # 輝度の更新
-  1 ) if [ `expr "$1" : '[\+\-]\?[0-9]\+%\?'` -ne 0 ]; then
+  1 ) if [ `expr "$1" : '^[\+\-]\?[0-9]\+%\?$'` -ne 0 ]; then
 
         # 引数の数字抽出
         if [ `expr "$1" : '^.\+%$'` -ne 0 ]; then
@@ -47,10 +47,14 @@ case $# in
         # 更新
         echo $UPDATE_BRIGHTNESS | sudo tee $BLIGHT_DIR/brightness
       else
+        # 引数が誤っている
         echo "invalid arguments"
+        exit 1
       fi;;
 
   # 引数が多すぎる
-  * ) echo "invalid arguments";;
+  * ) echo "invalid arguments"
+      exit 1;;
 esac
 
+exit 0
