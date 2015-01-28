@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# このスクリプトではbrightnessファイルへの書き込みにsudoを使用している．
+# キーイベントに割り当てるなどパスワードの入力を避けたい場合には，以下の設定を行う必要がある．
+# 例えばusersグループのユーザにパスワード無しの実行を許可する場合，
+# 以下の行をsudoersファイルに追記すればよい．
+# %users ALL=NOPASSWD:/usr/bin/tee /sys/class/backlight/intel_backlight/brightness
+
 BLIGHT_DIR="/sys/class/backlight/intel_backlight"
 MAX_BRIGHTNESS=`cat $BLIGHT_DIR/max_brightness`
 CUR_BRIGHTNESS=`cat $BLIGHT_DIR/brightness`
