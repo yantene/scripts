@@ -7,7 +7,15 @@ case $# in
 
   1 )
     case $1 in
-      on )
+      left )
+        xrandr --output eDP1 --auto
+        xrandr --output HDMI1 --auto
+        xrandr --output HDMI1 --right-of eDP1
+        xrandr --output HDMI1 --primary
+        ponymix -d alsa_output.pci-0000_00_03.0.hdmi-stereo-extra1 set-default
+        exit 0;;
+
+      right )
         xrandr --output eDP1 --auto
         xrandr --output HDMI1 --auto
         xrandr --output HDMI1 --left-of eDP1
