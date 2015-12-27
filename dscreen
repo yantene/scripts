@@ -1,5 +1,10 @@
 #!/bin/sh
 
+BLT='eDP1'  # 内蔵スクリーン
+EXT='HDMI1' # 拡張スクリーン
+BLT_SNK='1' # 内蔵スピーカ
+EXT_SNK='2' # 拡張スピーカ
+
 case $# in
   0 )
     dscreen toggle
@@ -7,35 +12,69 @@ case $# in
 
   1 )
     case $1 in
+      status )
+        BLT_W=`xrandr -q | grep "^$BLT" | cut -d' ' -f3 | cut -d'+' -f 2`
+        EXT_W=`xrandr -q | grep "^$EXT" | cut -d' ' -f4 | cut -d'+' -f 2`
+        if [ `xrandr -q | grep -c "*"` -eq 1 ]; then
+          echo 'off'
+        elif [ $BLT_W -gt $EXT_W ]; then
+          echo 'right'
+        elif [ $BLT_W -lt $EXT_W ]; then
+          echo 'left'
+        else
+          echo 'mirror'
+        fi
+        exit 0;;
+
       left )
-        xrandr --output eDP1 --auto
-        xrandr --output HDMI1 --auto
-        xrandr --output HDMI1 --right-of eDP1
-        xrandr --output HDMI1 --primary
-        ponymix -d alsa_output.pci-0000_00_03.0.hdmi-stereo-extra1 set-default
+        xrandr --output $BLT --auto
+        xrandr --output $EXT --auto
+        xrandr --output $EXT --right-of $BLT
+        xrandr --output $EXT --primary
+        pactl set-default-sink $EXT_SNK
         exit 0;;
 
       right )
-        xrandr --output eDP1 --auto
-        xrandr --output HDMI1 --auto
-        xrandr --output HDMI1 --left-of eDP1
-        xrandr --output HDMI1 --primary
-        ponymix -d alsa_output.pci-0000_00_03.0.hdmi-stereo-extra1 set-default
+        xrandr --output $BLT --auto
+        xrandr --output $EXT --auto
+        xrandr --output $EXT --left-of $BLT
+        xrandr --output $EXT --primary
+        pactl set-default-sink $EXT_SNK
+        exit 0;;
+
+      mirror )
+        xrandr --output $BLT --auto
+        xrandr --output $EXT --auto
+        xrandr --output $EXT --same-as $BLT
+        xrandr --output $EXT --primary
+        pactl set-default-sink $EXT_SNK
         exit 0;;
 
       off )
-        xrandr --output eDP1 --auto
-        xrandr --output HDMI1 --off
-        ponymix -d alsa_output.pci-0000_00_1b.0.analog-stereo set-default
+        xrandr --output $BLT --auto
+        xrandr --output $EXT --off
+        pactl set-default-sink $EXT_SNK
         exit 0;;
 
       toggle )
-        case `xrandr -q | grep -c "*"` in
-          1 )
-            dscreen on;;
-          2 )
-            dscreen off;;
+        case `dscreen status` in
+          off )
+            dscreen right
+            exit 0;;
+
+          right )
+            dscreen left
+            exit 0;;
+
+          left )
+            dscreen mirror
+            exit 0;;
+
+          mirror )
+            dscreen off
+            exit 0;;
         esac;;
+
     esac;;
 esac
 
